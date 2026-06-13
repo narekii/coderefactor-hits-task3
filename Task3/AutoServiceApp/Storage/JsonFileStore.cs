@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace AutoServiceApp.Storage;
 
-public class JsonFileStore<T> : IDataProvider<T>
+public class JsonFileStore<T>
 {
     public string Folder { get; private set; }
     public JsonSerializerOptions Options { get; private set; } = new() { WriteIndented = true };
