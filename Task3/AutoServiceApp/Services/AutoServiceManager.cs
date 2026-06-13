@@ -185,7 +185,7 @@ public class AutoServiceManager
         SaveAll();
     }
 
-    public RepairOrder CreateOrder(Customer? customer, Car? car, string description, Mechanic? mechanic, string status, string paymentMethod)
+    public RepairOrder CreateOrder(Customer? customer, Car? car, string description, Mechanic? mechanic, OrderStatus status, PaymentType paymentMethod)
     {
         var order = new RepairOrder
         {
@@ -209,7 +209,7 @@ public class AutoServiceManager
         return order;
     }
 
-    public void UpdateOrder(RepairOrder order, Customer? customer, Car? car, string description, Mechanic? mechanic, string status, decimal cost, string paymentMethod)
+    public void UpdateOrder(RepairOrder order, Customer? customer, Car? car, string description, Mechanic? mechanic, OrderStatus status, decimal cost, PaymentType paymentMethod)
     {
         order.CustomerId = customer?.Id ?? "";
         order.CarId = car?.Id ?? "";
@@ -226,13 +226,19 @@ public class AutoServiceManager
         SaveAll();
     }
 
-    public void ChangeOrderStatus(RepairOrder order, string newStatus, string notificationType)
+    public void ChangeOrderStatus(RepairOrder order, OrderStatus newStatus, string notificationType)
     {
-        StatusHelper.MarkStatus(order, newStatus);
-        if (newStatus == "Ready")
+        order.Status = newStatus;
+        order.StatusHistory.Add($"{DateTime.Now:g}: status changed to {newStatus}");
+        if (newStatus == OrderStatus.Ready)
+            order.CompletedAt = DateTime.Now;
+
+        if (newStatus == OrderStatus.Ready)
             order.Cost = CalculateOrderCost(order, true, order.PaymentMethod);
+
         if (order.AssignedMechanic != null && !order.AssignedMechanic.AssignedOrderIds.Contains(order.Id))
             order.AssignedMechanic.AssignedOrderIds.Add(order.Id);
+
         NotifyAboutStatus(order, notificationType);
         SaveAll();
     }
@@ -259,17 +265,17 @@ public class AutoServiceManager
         return true;
     }
 
-    public decimal CalculateOrderCost(RepairOrder order, bool final, string paymentMethod)
+    public decimal CalculateOrderCost(RepairOrder order, bool final, PaymentType paymentMethod)
     {
         var works = order.Works.Sum(x => x.Cost + (decimal)x.Hours * (order.AssignedMechanic?.HourRate ?? 0));
         var parts = order.UsedPartIds.Select(id => Parts.FirstOrDefault(p => p.Id == id)).Where(p => p != null).Sum(p => p!.Price * 1.20m);
         var result = works + parts;
         decimal tempDiscount = 0;
-        if (paymentMethod == "card")
+        if (paymentMethod == PaymentType.Card)
             result += result * 0.05m;
         if (order.Customer != null && order.Customer.Cars.Count > 2)
             result -= result * 0.10m;
-        if (final && order.Status == "Ready")
+        if (final && order.Status == OrderStatus.Ready)
             result += 500;
         if (result > 10000)
             tempDiscount = result * 0.15m;
@@ -333,7 +339,7 @@ public class AutoServiceManager
         AddMechanic("Owen Lane", "electrical", 1500);
         AddPart("Oil filter", "OF-100", 650, 12);
         AddPart("Brake pads", "BR-500", 3200, 5);
-        var order = CreateOrder(c1, car1, "Knock on startup, diagnostics required", m1, "Diagnostics", "card");
+        var order = CreateOrder(c1, car1, "Knock on startup, diagnostics required", m1, OrderStatus.Diagnostics, PaymentType.Card);
         AddWorkToOrder(order, "Computer diagnostics", 1.5, 2500);
         SaveAll();
     }
