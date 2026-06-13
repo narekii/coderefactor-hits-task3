@@ -197,7 +197,7 @@ public class AutoServiceManager
             order.CompletedAt = DateTime.Now;
 
         if (newStatus == OrderStatus.Ready)
-            order.Cost = Pricing.CalculateOrderCost(order, true, order.PaymentMethod);
+            order.Cost = Pricing.CalculateOrderCost(order, true, order.PaymentMethod, Parts);
 
         if (order.AssignedMechanic != null && !order.AssignedMechanic.AssignedOrderIds.Contains(order.Id))
             order.AssignedMechanic.AssignedOrderIds.Add(order.Id);
@@ -210,7 +210,7 @@ public class AutoServiceManager
     {
         var work = new RepairWork { Name = name, Hours = hours, Cost = cost };
         order.Works.Add(work);
-        order.Cost = Pricing.CalculateOrderCost(order, false, order.PaymentMethod);
+        order.Cost = Pricing.CalculateOrderCost(order, false, order.PaymentMethod, Parts);
         SaveAll();
     }
 
