@@ -21,7 +21,7 @@ public class AutoServiceManager
     public ReportService ReportService { get; set; } = new();
     public OrderStatusHelper StatusHelper { get; set; } = new();
     public PricingService Pricing { get; set; } = new();
-    public NotificationFacade Notifier { get; set; } = new(new SmsNotifier(), new EmailSender());
+    public NotificationService Notifier { get; set; } = new(new SmsNotifier(), new EmailSender());
 
     public void Load()
     {
