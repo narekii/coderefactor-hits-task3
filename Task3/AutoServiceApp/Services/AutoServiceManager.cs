@@ -197,7 +197,7 @@ public class AutoServiceManager
 
     public void ChangeOrderStatus(RepairOrder order, OrderStatus newStatus, string notificationType)
     {
-        order.Status = newStatus;
+        order.LogStatusChange(newStatus);
         order.StatusHistory.Add($"{DateTime.Now:g}: status changed to {newStatus}");
         if (newStatus == OrderStatus.Ready)
             order.CompletedAt = DateTime.Now;

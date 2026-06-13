@@ -42,4 +42,9 @@ public class RepairOrder : BaseEntity
         var car = Car == null ? CarId : $"{Car.Make} {Car.Model}";
         return $"{OrderNumber}: {client}, {car}, {Status}, {Cost:C}";
     }
+    public void LogStatusChange(OrderStatus newStatus)
+    {
+        Status = newStatus;
+        StatusHistory.Add($"{DateTime.Now:g}: status changed to {newStatus}");
+    }
 }
