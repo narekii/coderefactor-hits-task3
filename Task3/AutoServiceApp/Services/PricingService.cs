@@ -9,7 +9,7 @@ namespace AutoServiceApp.Services
 {
     public class PricingService
     {
-        public decimal CalculateOrderCost(RepairOrder order, bool final, PaymentType paymentMethod)
+        public decimal CalculateOrderCost(RepairOrder order, bool final, PaymentType paymentMethod, List<Part> Parts)
         {
             var works = order.Works.Sum(x => x.Cost + (decimal)x.Hours * (order.AssignedMechanic?.HourRate ?? 0));
             var parts = order.UsedPartIds.Select(id => Parts.FirstOrDefault(p => p.Id == id)).Where(p => p != null).Sum(p => p!.Price * 1.20m);
