@@ -47,7 +47,10 @@ public class AutoServiceManager
     public void RelinkEverything()
     {
         foreach (var c in Customers)
-            c.Cars = Cars.Where(x => x.CustomerId == c.Id).ToList();
+        {
+            c.Cars.Clear();
+            c.Cars.AddRange(Cars.Where(x => x.CustomerId == c.Id));
+        }
 
         foreach (var car in Cars)
             car.Owner = Customers.FirstOrDefault(x => x.Id == car.CustomerId);
@@ -60,7 +63,10 @@ public class AutoServiceManager
         }
 
         foreach (var m in Mechanics)
-            m.AssignedOrderIds = Orders.Where(x => x.AssignedMechanicId == m.Id).Select(x => x.Id).ToList();
+        {
+            m.AssignedOrderIds.Clear();
+            m.AssignedOrderIds.AddRange(Orders.Where(x => x.AssignedMechanicId == m.Id).Select(x => x.Id));
+        }
     }
 
     public void AddCustomer(Customer customer)
@@ -259,8 +265,8 @@ public class AutoServiceManager
         var car2 = new Car { Owner = c2, CustomerId = c2.Id, Make = "Kia", Model = "Rio", Year = 2021, Vin = "Z94CB41ABMR000002", Mileage = 43000, LicensePlate = "MOR777" };
         AddCar(car1);
         AddCar(car2);
-        var m1 = new Mechanic { Name = "Sam Miller", Specialization = "engine", HourRate = 1200 };
-        var m2 = new Mechanic { Name = "Owen Lane", Specialization = "electrical", HourRate = 1500 };
+        var m1 = new Mechanic { Name = "Sam Miller", Specialization = MechanicSpecialization.Engine, HourRate = 1200 };
+        var m2 = new Mechanic { Name = "Owen Lane", Specialization = MechanicSpecialization.Electrical, HourRate = 1500 };
         AddMechanic(m1);
         AddMechanic(m2);
         var p1 = new Part { Name = "Oil filter", Article = "OF-100", Price = 650, Stock = 12 };
