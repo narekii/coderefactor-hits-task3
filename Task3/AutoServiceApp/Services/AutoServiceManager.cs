@@ -228,24 +228,6 @@ public class AutoServiceManager
         return true;
     }
 
-
-
-    public string BuildOrderDetails(RepairOrder order)
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine(order.ToString());
-        sb.AppendLine(order.ProblemDescription);
-        sb.AppendLine("Works:");
-        foreach (var work in order.Works)
-            sb.AppendLine(" - " + work);
-        sb.AppendLine("History:");
-        foreach (var h in order.StatusHistory)
-            sb.AppendLine(" - " + h);
-        if (order.Customer != null)
-            sb.AppendLine("First car owner phone: " + order.Customer.Phone);
-        return sb.ToString();
-    }
-
     public List<RepairOrder> GetOrdersForMechanic(Mechanic m)
     {
         var result = new List<RepairOrder>();

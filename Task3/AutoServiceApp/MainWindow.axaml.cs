@@ -1,10 +1,11 @@
+using AutoServiceApp.Helpers;
+using AutoServiceApp.Models;
+using AutoServiceApp.Services;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
-using AutoServiceApp.Helpers;
-using AutoServiceApp.Models;
-using AutoServiceApp.Services;
+using System.Text;
 
 namespace AutoServiceApp;
 
@@ -402,7 +403,7 @@ public partial class MainWindow : Window
         _orderCost.Text = o.Cost.ToString();
         _orderWorkList.ItemsSource = null;
         _orderWorkList.ItemsSource = o.Works;
-        _orderDetailsText.Text = Manager.BuildOrderDetails(o);
+        _orderDetailsText.Text = BuildOrderDetails(o);
     }
 
     private void SelectOrder(RepairOrder o)
@@ -420,4 +421,20 @@ public partial class MainWindow : Window
     private int Int(string? text) => int.TryParse(text, out var x) ? x : 0;
     private double Double(string? text) => double.TryParse(text, out var x) ? x : 0;
     private decimal Decimal(string? text) => decimal.TryParse(text, out var x) ? x : 0;
+
+    public string BuildOrderDetails(RepairOrder order)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine(order.ToString());
+        sb.AppendLine(order.ProblemDescription);
+        sb.AppendLine("Works:");
+        foreach (var work in order.Works)
+            sb.AppendLine(" - " + work);
+        sb.AppendLine("History:");
+        foreach (var h in order.StatusHistory)
+            sb.AppendLine(" - " + h);
+        if (order.Customer != null)
+            sb.AppendLine("First car owner phone: " + order.Customer.Phone);
+        return sb.ToString();
+    }
 }
