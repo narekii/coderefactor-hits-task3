@@ -290,8 +290,8 @@ public class AutoServiceManager
         sb.AppendLine("History:");
         foreach (var h in order.StatusHistory)
             sb.AppendLine(" - " + h);
-        if (order.Customer?.Cars.Count > 0)
-            sb.AppendLine("First car owner phone: " + order.Customer.Cars[0].Owner?.Phone);
+        if (order.Customer != null)
+            sb.AppendLine("First car owner phone: " + order.Customer.Phone);
         return sb.ToString();
     }
 
