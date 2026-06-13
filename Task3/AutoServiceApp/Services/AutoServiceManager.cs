@@ -20,6 +20,7 @@ public class AutoServiceManager
     public JsonFileStore<Mechanic> MechanicStore { get; set; } = new();
     public ReportService ReportService { get; set; } = new();
     public OrderStatusHelper StatusHelper { get; set; } = new();
+    public PricingService Pricing { get; set; } = new();
     public NotificationFacade Notifier { get; set; } = new(new SmsNotifier(), new EmailSender());
 
     public void Load()
@@ -234,7 +235,7 @@ public class AutoServiceManager
             order.CompletedAt = DateTime.Now;
 
         if (newStatus == OrderStatus.Ready)
-            order.Cost = CalculateOrderCost(order, true, order.PaymentMethod);
+            order.Cost = Pricing.CalculateOrderCost(order, true, order.PaymentMethod);
 
         if (order.AssignedMechanic != null && !order.AssignedMechanic.AssignedOrderIds.Contains(order.Id))
             order.AssignedMechanic.AssignedOrderIds.Add(order.Id);
@@ -247,7 +248,7 @@ public class AutoServiceManager
     {
         var work = new RepairWork { Name = name, Hours = hours, Cost = cost };
         order.Works.Add(work);
-        order.Cost = CalculateOrderCost(order, false, order.PaymentMethod);
+        order.Cost = Pricing.CalculateOrderCost(order, false, order.PaymentMethod);
         SaveAll();
     }
 
@@ -265,24 +266,7 @@ public class AutoServiceManager
         return true;
     }
 
-    public decimal CalculateOrderCost(RepairOrder order, bool final, PaymentType paymentMethod)
-    {
-        var works = order.Works.Sum(x => x.Cost + (decimal)x.Hours * (order.AssignedMechanic?.HourRate ?? 0));
-        var parts = order.UsedPartIds.Select(id => Parts.FirstOrDefault(p => p.Id == id)).Where(p => p != null).Sum(p => p!.Price * 1.20m);
-        var result = works + parts;
-        decimal tempDiscount = 0;
-        if (paymentMethod == PaymentType.Card)
-            result += result * 0.05m;
-        if (order.Customer != null && order.Customer.Cars.Count > 2)
-            result -= result * 0.10m;
-        if (final && order.Status == OrderStatus.Ready)
-            result += 500;
-        if (result > 10000)
-            tempDiscount = result * 0.15m;
-        else
-            tempDiscount = 0;
-        return result - tempDiscount;
-    }
+
 
     public string BuildOrderDetails(RepairOrder order)
     {
