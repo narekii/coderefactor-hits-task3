@@ -22,3 +22,10 @@ public enum OrderType
     Urgent,
     Warranty
 }
+public enum MechanicSpecialization
+{
+    Engine,
+    Electrical,
+    Suspension,
+    General
+}

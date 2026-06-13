@@ -3,7 +3,7 @@ namespace AutoServiceApp.Models;
 public class Mechanic : BaseEntity
 {
     public string Name { get; set; } = "";
-    public string Specialization { get; set; } = "";
+    public MechanicSpecialization Specialization { get; set; } = "";
     public decimal HourRate { get; set; }
     public List<string> AssignedOrderIds { get; private set; } = new();
 
