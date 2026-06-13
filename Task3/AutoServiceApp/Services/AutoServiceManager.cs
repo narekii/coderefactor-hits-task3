@@ -7,12 +7,12 @@ namespace AutoServiceApp.Services;
 
 public class AutoServiceManager
 {
-    public List<Customer> Customers { get; set; } = new();
-    public List<Car> Cars { get; set; } = new();
-    public List<RepairOrder> Orders { get; set; } = new();
-    public List<Part> Parts { get; set; } = new();
-    public List<Mechanic> Mechanics { get; set; } = new();
-    public List<string> Notifications { get; set; } = new();
+    public List<Customer> Customers { get; private set; } = new();
+    public List<Car> Cars { get; private set; } = new();
+    public List<RepairOrder> Orders { get; private set; } = new();
+    public List<Part> Parts { get; private set; } = new();
+    public List<Mechanic> Mechanics { get; private set; } = new();
+    public List<string> Notifications { get; private set; } = new();
     public JsonFileStore<Customer> CustomerStore { get; set; } = new();
     public JsonFileStore<Car> CarStore { get; set; } = new();
     public JsonFileStore<RepairOrder> OrderStore { get; set; } = new();
