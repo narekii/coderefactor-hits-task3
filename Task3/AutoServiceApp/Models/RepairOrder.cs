@@ -20,7 +20,7 @@ public class RepairOrder : BaseEntity
     public PaymentType PaymentMethod { get; set; } = PaymentType.Cash;
     public List<RepairWork> Works { get; private set; } = new();
     public List<string> UsedPartIds { get; private set; } = new();
-    public List<string> StatusHistory { get; set; } = new();
+    public List<string> StatusHistory { get; private set; } = new();
     public OrderType Type { get; set; } = OrderType.Standard;
     public bool NeedTaxi { get; set; }
     public string? WarrantyNumber { get; set; }

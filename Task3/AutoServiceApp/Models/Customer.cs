@@ -7,7 +7,7 @@ public class Customer : BaseEntity
     public string Email { get; set; } = "";
     public string Address { get; set; } = "";
     [System.Text.Json.Serialization.JsonIgnore]
-    public List<Car> Cars { get; set; } = new();
+    public List<Car> Cars { get; private set; } = new();
     public PaymentType LastPaymentMethod { get; set; } = PaymentType.Cash;
 
     public string Export() => $"{Name};{Phone};{Email};{Address}";
