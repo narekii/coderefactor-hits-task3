@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Task3/AutoServiceApp/Helpers/OrderStatusHelper.cs
+/Task3/AutoServiceApp/Services/AutoServiceManager.cs
+/Task3/AutoServiceApp/MainWindow.axaml.cs

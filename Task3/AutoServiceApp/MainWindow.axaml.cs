@@ -1,10 +1,10 @@
+using AutoServiceApp.Models;
+using AutoServiceApp.Services;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
-using AutoServiceApp.Helpers;
-using AutoServiceApp.Models;
-using AutoServiceApp.Services;
+using System.Text;
 
 namespace AutoServiceApp;
 
@@ -81,7 +81,7 @@ public partial class MainWindow : Window
         {
             Items =
             {
-                new TabItem { Header = "Home", Content = BuildHomeTab() },
+                new TabItem {Header = "Home", Content = BuildHomeTab() },
                 new TabItem { Header = "Customers", Content = BuildCustomersTab() },
                 new TabItem { Header = "Cars", Content = BuildCarsTab() },
                 new TabItem { Header = "Orders", Content = BuildOrdersTab() },
@@ -95,31 +95,87 @@ public partial class MainWindow : Window
 
     private Control BuildHomeTab()
     {
-        var panel = new StackPanel { Spacing = 12, Margin = new Avalonia.Thickness(8) };
-        panel.Children.Add(new TextBlock { Text = "Auto service: training management system", FontSize = 24 });
-        panel.Children.Add(new TextBlock { Text = "Data is automatically loaded from and saved to JSON files in the user profile.", TextWrapping = Avalonia.Media.TextWrapping.Wrap });
-        panel.Children.Add(new TextBlock { Text = "Notification log" });
-        _notificationLog = new TextBox { AcceptsReturn = true, IsReadOnly = true, MinHeight = 420 };
+        var panel = new StackPanel
+        {
+            Spacing = 12, Margin = new Avalonia.Thickness(8)
+        };
+        panel.Children.Add(new TextBlock
+        {
+            Text = "Auto service: training management system", FontSize = 24
+        });
+        panel.Children.Add(new TextBlock
+        {
+            Text = "Data is automatically loaded from and saved to JSON files in the user profile.", TextWrapping = Avalonia.Media.TextWrapping.Wrap
+        });
+        panel.Children.Add(new TextBlock
+        {
+            Text = "Notification log"
+        });
+        _notificationLog = new TextBox
+        {
+            AcceptsReturn = true, IsReadOnly = true, MinHeight = 420
+        };
         panel.Children.Add(_notificationLog);
-        return new ScrollViewer { Content = panel };
+        return new ScrollViewer
+        {
+            Content = panel
+        };
     }
 
     private Control BuildCustomersTab()
     {
         var grid = TwoColumnGrid();
         var form = FormPanel();
+
         _customerName = Box("Name");
         _customerPhone = Box("Phone");
         _customerEmail = Box("Email");
         _customerAddress = Box("Address");
+
         AddLabeled(form, "Name", _customerName);
         AddLabeled(form, "Phone", _customerPhone);
         AddLabeled(form, "Email", _customerEmail);
         AddLabeled(form, "Address", _customerAddress);
         form.Children.Add(RowButtons(
-            ("Create", (_, _) => { Manager.AddCustomer(_customerName.Text ?? "", _customerPhone.Text ?? "", _customerEmail.Text ?? "", _customerAddress.Text ?? ""); ClearCustomerForm(); RefreshAll(); }),
-            ("Save", (_, _) => { if (_customerList.SelectedItem is Customer c) { Manager.UpdateCustomer(c, _customerName.Text ?? "", _customerPhone.Text ?? "", _customerEmail.Text ?? "", _customerAddress.Text ?? ""); RefreshAll(); } }),
-            ("Delete", (_, _) => { if (_customerList.SelectedItem is Customer c) { _customerList.ItemsSource = null; Manager.DeleteCustomer(c); ClearCustomerForm(); RefreshAll(); } })));
+                    ("Create", (_, _) => 
+                    {
+                        var c = new Customer 
+                        { 
+                            Name = _customerName.Text ?? "", 
+                            Phone = _customerPhone.Text ?? "", 
+                            Email = _customerEmail.Text ?? "", 
+                            Address = _customerAddress.Text ?? "" 
+                        };
+                        Manager.AddCustomer(c); 
+                        ClearCustomerForm(); 
+                        RefreshAll();
+                    }
+        ),
+                    ("Save", (_, _) => 
+                    {
+                        if (_customerList.SelectedItem is Customer c)
+                        {
+                            c.Name = _customerName.Text ?? "";
+                            c.Phone = _customerPhone.Text ?? "";
+                            c.Email = _customerEmail.Text ?? "";
+                            c.Address = _customerAddress.Text ?? "";
+                            Manager.UpdateCustomer(c); 
+                            RefreshAll();
+                        }
+                    }
+        ),
+                    ("Delete", (_, _) => 
+                    {
+                        if (_customerList.SelectedItem is Customer c)
+                        {
+                            _customerList.ItemsSource = null; 
+                            Manager.DeleteCustomer(c);
+                            ClearCustomerForm();
+                            RefreshAll();
+                        }
+                    }
+        )
+                ));
         Grid.SetColumn(form, 0);
         grid.Children.Add(form);
 
@@ -143,13 +199,19 @@ public partial class MainWindow : Window
     {
         var grid = TwoColumnGrid();
         var form = FormPanel();
-        _carCustomer = new ComboBox { PlaceholderText = "Customer" };
+
+        _carCustomer = new ComboBox
+        {
+            PlaceholderText = "Customer"
+        };
+
         _carMake = Box("Make");
         _carModel = Box("Model");
         _carYear = Box("Year");
         _carVin = Box("VIN");
         _carLicense = Box("License plate");
         _carMileage = Box("Mileage");
+
         AddLabeled(form, "Customer", _carCustomer);
         AddLabeled(form, "Make", _carMake);
         AddLabeled(form, "Model", _carModel);
@@ -158,9 +220,44 @@ public partial class MainWindow : Window
         AddLabeled(form, "License plate", _carLicense);
         AddLabeled(form, "Mileage", _carMileage);
         form.Children.Add(RowButtons(
-            ("Create", (_, _) => { Manager.AddCar(_carCustomer.SelectedItem as Customer, _carMake.Text ?? "", _carModel.Text ?? "", Int(_carYear.Text), _carVin.Text ?? "", Int(_carMileage.Text), _carLicense.Text ?? ""); ClearCarForm(); RefreshAll(); }),
-            ("Save", (_, _) => { if (_carList.SelectedItem is Car car) { Manager.UpdateCar(car, _carCustomer.SelectedItem as Customer, _carMake.Text ?? "", _carModel.Text ?? "", Int(_carYear.Text), _carVin.Text ?? "", Int(_carMileage.Text), _carLicense.Text ?? ""); RefreshAll(); } }),
-            ("Delete", (_, _) => { if (_carList.SelectedItem is Car car) { _carList.ItemsSource = null; Manager.DeleteCar(car); ClearCarForm(); RefreshAll(); } })));
+                    ("Create", (_, _) => {
+                        var owner = _carCustomer.SelectedItem as Customer;
+                        var car = new Car 
+                        {
+                            Owner = owner, CustomerId = owner?.Id ?? "",
+                            Make = _carMake.Text ?? "", Model = _carModel.Text ?? "",
+                            Year = Int(_carYear.Text), Vin = _carVin.Text ?? "",
+                            Mileage = Int(_carMileage.Text), LicensePlate = _carLicense.Text ?? ""
+                        };
+                        Manager.AddCar(car); ClearCarForm(); RefreshAll();
+                    }
+        ),
+                    ("Save", (_, _) => 
+                    {
+                        if (_carList.SelectedItem is Car car)
+                        {
+                            car.Owner = _carCustomer.SelectedItem as Customer; 
+                            car.CustomerId = car.Owner?.Id ?? ""; 
+                            car.Make = _carMake.Text ?? ""; 
+                            car.Model = _carModel.Text ?? ""; 
+                            car.Year = Int(_carYear.Text); 
+                            car.Vin = _carVin.Text ?? ""; 
+                            car.Mileage = Int(_carMileage.Text); 
+                            car.LicensePlate = _carLicense.Text ?? "";
+                            Manager.UpdateCar(car); RefreshAll();
+                        }
+                    }
+        ),
+                    ("Delete", (_, _) => {
+                        if (_carList.SelectedItem is Car car)
+                        {
+                            _carList.ItemsSource = null; 
+                            Manager.DeleteCar(car); 
+                            ClearCarForm(); 
+                            RefreshAll();
+                        }
+                    }
+        )));
         Grid.SetColumn(form, 0);
         grid.Children.Add(form);
         _carList = new ListBox();
@@ -186,6 +283,7 @@ public partial class MainWindow : Window
     {
         var grid = TwoColumnGrid(420);
         var form = FormPanel();
+
         _orderCustomer = new ComboBox { PlaceholderText = "Customer" };
         _orderCar = new ComboBox { PlaceholderText = "Car" };
         _orderMechanic = new ComboBox { PlaceholderText = "Mechanic" };
@@ -193,6 +291,7 @@ public partial class MainWindow : Window
         _orderPayment = new ComboBox { ItemsSource = new[] { "cash", "card", "transfer" }, SelectedIndex = 0 };
         _orderProblem = Box("Problem description");
         _orderCost = Box("Cost");
+
         AddLabeled(form, "Customer", _orderCustomer);
         AddLabeled(form, "Car", _orderCar);
         AddLabeled(form, "Mechanic", _orderMechanic);
@@ -201,25 +300,70 @@ public partial class MainWindow : Window
         AddLabeled(form, "Description", _orderProblem);
         AddLabeled(form, "Cost", _orderCost);
         form.Children.Add(RowButtons(
-            ("Create", (_, _) => { Manager.CreateOrder(_orderCustomer.SelectedItem as Customer, _orderCar.SelectedItem as Car, _orderProblem.Text ?? "", _orderMechanic.SelectedItem as Mechanic, _orderStatus.SelectedItem?.ToString() ?? "New", _orderPayment.SelectedItem?.ToString() ?? "cash"); ClearOrderForm(); RefreshAll(); }),
-            ("Save", (_, _) => { if (_orderList.SelectedItem is RepairOrder o) { Manager.UpdateOrder(o, _orderCustomer.SelectedItem as Customer, _orderCar.SelectedItem as Car, _orderProblem.Text ?? "", _orderMechanic.SelectedItem as Mechanic, _orderStatus.SelectedItem?.ToString() ?? "New", Decimal(_orderCost.Text), _orderPayment.SelectedItem?.ToString() ?? "cash"); RefreshAll(); } }),
-            ("Delete", (_, _) => { if (_orderList.SelectedItem is RepairOrder o) { _orderList.ItemsSource = null; Manager.Orders.Remove(o); Manager.SaveAll(); ClearOrderForm(); RefreshAll(); } })));
+                    ("Create", (_, _) => {
+                        Enum.TryParse<OrderStatus>((string?)_orderStatus.SelectedItem, out var stat);
+                        Enum.TryParse<PaymentType>((string?)_orderPayment.SelectedItem, out var pay);
+                        var o = Manager.CreateOrder(
+                            _orderCustomer.SelectedItem as Customer,
+                            _orderCar.SelectedItem as Car,
+                            _orderProblem.Text ?? "",
+                            _orderMechanic.SelectedItem as Mechanic,
+                            stat,
+                            pay
+                        );
+                        ClearOrderForm(); RefreshAll(); SelectOrder(o);
+                    }
+        ),
+                    ("Save", (_, _) => {
+                        if (_orderList.SelectedItem is RepairOrder o)
+                        {
+                            Enum.TryParse<OrderStatus>((string?)_orderStatus.SelectedItem, out var stat);
+                            Enum.TryParse<PaymentType>((string?)_orderPayment.SelectedItem, out var pay);
+                            Manager.UpdateOrder(o, _orderCustomer.SelectedItem as Customer, _orderCar.SelectedItem as Car, _orderProblem.Text ?? "", _orderMechanic.SelectedItem as Mechanic, stat, Decimal(_orderCost.Text), pay);
+                            RefreshAll();
+                        }
+                    }
+        ),
+                    ("Delete", (_, _) => {
+                        if (_orderList.SelectedItem is RepairOrder o)
+                        {
+                            _orderList.ItemsSource = null; Manager.Orders.Remove(o); Manager.SaveAll(); ClearOrderForm(); RefreshAll();
+                        }
+                    }
+        )
+                ));
 
         form.Children.Add(new TextBlock { Text = "Add work", Margin = new Avalonia.Thickness(0, 12, 0, 0) });
         _workName = Box("Work name");
         _workHours = Box("Hours");
         _workCost = Box("Cost");
+
         AddLabeled(form, "Work", _workName);
         AddLabeled(form, "Hours", _workHours);
         AddLabeled(form, "Price", _workCost);
-        form.Children.Add(Button("Add work", (_, _) => { if (_orderList.SelectedItem is RepairOrder o) { Manager.AddWorkToOrder(o, _workName.Text ?? "", Double(_workHours.Text), Decimal(_workCost.Text)); RefreshAll(); SelectOrder(o); } }));
+
+        form.Children.Add(Button("Add work", (_, _) => 
+        { 
+            if (_orderList.SelectedItem is RepairOrder o) 
+            { 
+                Manager.AddWorkToOrder(o, _workName.Text ?? "", 
+                    Double(_workHours.Text), 
+                    Decimal(_workCost.Text)); 
+                RefreshAll(); 
+                SelectOrder(o); } }));
 
         form.Children.Add(new TextBlock { Text = "Use part", Margin = new Avalonia.Thickness(0, 12, 0, 0) });
         _usePartCombo = new ComboBox { PlaceholderText = "Part" };
         _usePartQty = Box("Quantity");
         AddLabeled(form, "Part", _usePartCombo);
         AddLabeled(form, "Qty", _usePartQty);
-        form.Children.Add(Button("Use", (_, _) => { if (_orderList.SelectedItem is RepairOrder o && _usePartCombo.SelectedItem is Part p) { Manager.UsePartForOrder(o, p, Math.Max(1, Int(_usePartQty.Text))); RefreshAll(); SelectOrder(o); } }));
+        form.Children.Add(Button("Use", (_, _) => { 
+            if (_orderList.SelectedItem is RepairOrder o && _usePartCombo.SelectedItem is Part p) 
+            { 
+                Manager.UsePartForOrder(o, p, Math.Max(1, Int(_usePartQty.Text))); 
+                RefreshAll(); SelectOrder(o); 
+            } 
+        }));
         Grid.SetColumn(form, 0);
         grid.Children.Add(new ScrollViewer { Content = form });
 
@@ -258,9 +402,40 @@ public partial class MainWindow : Window
         AddLabeled(form, "Price", _partPrice);
         AddLabeled(form, "Stock", _partStock);
         form.Children.Add(RowButtons(
-            ("Add", (_, _) => { Manager.AddPart(_partName.Text ?? "", _partArticle.Text ?? "", Decimal(_partPrice.Text), Int(_partStock.Text)); ClearPartForm(); RefreshAll(); }),
-            ("Save", (_, _) => { if (_partList.SelectedItem is Part p) { Manager.UpdatePart(p, _partName.Text ?? "", _partArticle.Text ?? "", Decimal(_partPrice.Text), Int(_partStock.Text)); RefreshAll(); } }),
-            ("Delete", (_, _) => { if (_partList.SelectedItem is Part p) { _partList.ItemsSource = null; Manager.DeletePart(p); ClearPartForm(); RefreshAll(); } })));
+                    ("Add", (_, _) => 
+                    {
+                        var p = new Part 
+                        { 
+                            Name = _partName.Text ?? "", 
+                            Article = _partArticle.Text ?? "", 
+                            Price = Decimal(_partPrice.Text), 
+                            Stock = Int(_partStock.Text) 
+                        };
+                        Manager.AddPart(p); 
+                        ClearPartForm(); 
+                        RefreshAll();
+                    }
+        ),
+                    ("Save", (_, _) => 
+                    {
+                        if (_partList.SelectedItem is Part p)
+                        {
+                            p.Name = _partName.Text ?? ""; p.Article = _partArticle.Text ?? ""; p.Price = Decimal(_partPrice.Text); p.Stock = Int(_partStock.Text);
+                            Manager.UpdatePart(p); RefreshAll();
+                        }
+                    }
+        ),
+                    ("Delete", (_, _) => 
+                    {
+                        if (_partList.SelectedItem is Part p) 
+                        {
+                            _partList.ItemsSource = null; 
+                            Manager.DeletePart(p); 
+                            ClearPartForm(); 
+                            RefreshAll(); 
+                        } 
+                    }
+        )));
         Grid.SetColumn(form, 0);
         grid.Children.Add(form);
         _partList = new ListBox();
@@ -286,14 +461,51 @@ public partial class MainWindow : Window
         _mechanicName = Box("Name");
         _mechanicSpec = Box("Specialization");
         _mechanicRate = Box("Rate");
-        _mechanicOrders = new TextBox { AcceptsReturn = true, IsReadOnly = true, MinHeight = 200 };
+        _mechanicOrders = new TextBox {
+            AcceptsReturn = true, IsReadOnly = true, MinHeight = 200
+        };
+
         AddLabeled(form, "Name", _mechanicName);
         AddLabeled(form, "Specialization", _mechanicSpec);
         AddLabeled(form, "Rate", _mechanicRate);
         form.Children.Add(RowButtons(
-            ("Create", (_, _) => { Manager.AddMechanic(_mechanicName.Text ?? "", _mechanicSpec.Text ?? "", Decimal(_mechanicRate.Text)); ClearMechanicForm(); RefreshAll(); }),
-            ("Save", (_, _) => { if (_mechanicList.SelectedItem is Mechanic m) { Manager.UpdateMechanic(m, _mechanicName.Text ?? "", _mechanicSpec.Text ?? "", Decimal(_mechanicRate.Text)); RefreshAll(); } }),
-            ("Delete", (_, _) => { if (_mechanicList.SelectedItem is Mechanic m) { _mechanicList.ItemsSource = null; Manager.DeleteMechanic(m); ClearMechanicForm(); RefreshAll(); } })));
+                    ("Create", (_, _) => {
+                        Enum.TryParse<MechanicSpecialization>(_mechanicSpec.Text, true, out var spec);
+                        var m = new Mechanic 
+                        { 
+                            Name = _mechanicName.Text ?? "",
+                            Specialization = spec,
+                            HourRate = Decimal(_mechanicRate.Text) 
+                        };
+                        Manager.AddMechanic(m);
+                        ClearMechanicForm();
+                        RefreshAll();
+                    }
+        ),
+                    ("Save", (_, _) => {
+                        if (_mechanicList.SelectedItem is Mechanic m)
+                        {
+                            Enum.TryParse<MechanicSpecialization>(_mechanicSpec.Text, true, out var spec);
+                            m.Name = _mechanicName.Text ?? "";
+                            m.Specialization = spec;
+                            m.HourRate = Decimal(_mechanicRate.Text);
+                            Manager.UpdateMechanic(m);
+                            RefreshAll();
+                        }
+                    }
+        ),
+                    ("Delete", (_, _) => 
+                    {
+                        if (_mechanicList.SelectedItem is Mechanic m) 
+                        {
+                            _mechanicList.ItemsSource = null;
+                            Manager.DeleteMechanic(m);
+                            ClearMechanicForm();
+                            RefreshAll(); 
+                        } 
+                    }
+        )));
+
         form.Children.Add(new TextBlock { Text = "Assigned orders" });
         form.Children.Add(_mechanicOrders);
         Grid.SetColumn(form, 0);
@@ -304,7 +516,7 @@ public partial class MainWindow : Window
             if (_mechanicList.SelectedItem is Mechanic m)
             {
                 _mechanicName.Text = m.Name;
-                _mechanicSpec.Text = m.Specialization;
+                _mechanicSpec.Text = m.Specialization.ToString();
                 _mechanicRate.Text = m.HourRate.ToString();
                 _mechanicOrders.Text = string.Join("\n", Manager.GetOrdersForMechanic(m).Select(x => x.ToString()));
             }
@@ -328,7 +540,8 @@ public partial class MainWindow : Window
         {
             var f = DateTime.TryParse(from.Text, out var fd) ? fd : DateTime.Today.AddMonths(-1);
             var t = DateTime.TryParse(to.Text, out var td) ? td : DateTime.Today;
-            _reportText.Text = Manager.BuildReports(f, t);
+            var period = new DateRange(f, t);
+            _reportText.Text = Manager.ReportService.BuildReports(Manager.Orders, Manager.Mechanics, Manager.Parts, period);
         }));
         panel.Children.Add(row);
         _reportText = new TextBox { AcceptsReturn = true, IsReadOnly = true, MinHeight = 600 };
@@ -387,8 +600,8 @@ public partial class MainWindow : Window
         _orderCar.ItemsSource = Manager.Cars.ToList();
         _orderMechanic.ItemsSource = Manager.Mechanics.ToList();
         _usePartCombo.ItemsSource = Manager.Parts.ToList();
-        _notificationLog.Text = string.Join(Environment.NewLine, Manager.Notifications.Concat(Manager.SmsNotifier.SentMessages).Concat(Manager.EmailSender.Log));
-        _reportText.Text = Manager.BuildReports(DateTime.Today.AddMonths(-1), DateTime.Today);
+        _notificationLog.Text = string.Join(Environment.NewLine, Manager.Notifications.Concat(Manager.Notifier.Log));
+        _reportText.Text = Manager.ReportService.BuildReports(Manager.Orders, Manager.Mechanics, Manager.Parts, new DateRange(DateTime.Today.AddMonths(-1), DateTime.Today));
     }
 
     private void FillOrder(RepairOrder o)
@@ -402,7 +615,7 @@ public partial class MainWindow : Window
         _orderCost.Text = o.Cost.ToString();
         _orderWorkList.ItemsSource = null;
         _orderWorkList.ItemsSource = o.Works;
-        _orderDetailsText.Text = Manager.BuildOrderDetails(o);
+        _orderDetailsText.Text = BuildOrderDetails(o);
     }
 
     private void SelectOrder(RepairOrder o)
@@ -420,4 +633,20 @@ public partial class MainWindow : Window
     private int Int(string? text) => int.TryParse(text, out var x) ? x : 0;
     private double Double(string? text) => double.TryParse(text, out var x) ? x : 0;
     private decimal Decimal(string? text) => decimal.TryParse(text, out var x) ? x : 0;
+
+    public string BuildOrderDetails(RepairOrder order)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine(order.ToString());
+        sb.AppendLine(order.ProblemDescription);
+        sb.AppendLine("Works:");
+        foreach (var work in order.Works)
+            sb.AppendLine(" - " + work);
+        sb.AppendLine("History:");
+        foreach (var h in order.StatusHistory)
+            sb.AppendLine(" - " + h);
+        if (order.Customer != null)
+            sb.AppendLine("First car owner phone: " + order.Customer.Phone);
+        return sb.ToString();
+    }
 }

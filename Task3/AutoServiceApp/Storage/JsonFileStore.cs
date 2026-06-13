@@ -2,10 +2,10 @@ using System.Text.Json;
 
 namespace AutoServiceApp.Storage;
 
-public class JsonFileStore<T> : IDataProvider<T>
+public class JsonFileStore<T>
 {
-    public string Folder { get; set; }
-    public JsonSerializerOptions Options { get; set; } = new() { WriteIndented = true };
+    public string Folder { get; private set; }
+    public JsonSerializerOptions Options { get; private set; } = new() { WriteIndented = true };
 
     public JsonFileStore()
     {
@@ -31,6 +31,11 @@ public class JsonFileStore<T> : IDataProvider<T>
             try { File.Copy(file, bad); } catch { }
             return new List<T>();
         }
+    }
+    public void SetTestFolder(string path)
+    {
+        Folder = path;
+        Directory.CreateDirectory(Folder);
     }
 
     public void Save(string name, List<T> values)
