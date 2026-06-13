@@ -4,8 +4,8 @@ namespace AutoServiceApp.Storage;
 
 public class JsonFileStore<T> : IDataProvider<T>
 {
-    public string Folder { get; set; }
-    public JsonSerializerOptions Options { get; set; } = new() { WriteIndented = true };
+    public string Folder { get; private set; }
+    public JsonSerializerOptions Options { get; private set; } = new() { WriteIndented = true };
 
     public JsonFileStore()
     {
