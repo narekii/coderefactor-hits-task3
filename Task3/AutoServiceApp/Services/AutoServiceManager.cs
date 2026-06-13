@@ -1,5 +1,4 @@
 using System.Text;
-using AutoServiceApp.Helpers;
 using AutoServiceApp.Models;
 using AutoServiceApp.Storage;
 
@@ -19,7 +18,6 @@ public class AutoServiceManager
     public JsonFileStore<Part> PartStore { get; set; } = new();
     public JsonFileStore<Mechanic> MechanicStore { get; set; } = new();
     public ReportService ReportService { get; set; } = new();
-    public OrderStatusHelper StatusHelper { get; set; } = new();
     public PricingService Pricing { get; set; } = new();
     public NotificationService Notifier { get; set; } = new();
 
