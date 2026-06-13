@@ -11,14 +11,6 @@ public abstract class BaseReport
 public class RepairReport : BaseReport
 {
     public List<RepairOrder> Orders { get; set; } = new();
-}
-
-public class UrgentRepairReport : RepairReport
-{
     public decimal ExtraRevenue { get; set; }
-}
-
-public class WarrantyRepairReport : RepairReport
-{
     public int ApprovedCount { get; set; }
 }

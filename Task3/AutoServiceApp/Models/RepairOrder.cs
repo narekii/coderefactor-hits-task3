@@ -21,6 +21,10 @@ public class RepairOrder : BaseEntity
     public List<RepairWork> Works { get; set; } = new();
     public List<string> UsedPartIds { get; set; } = new();
     public List<string> StatusHistory { get; set; } = new();
+    public OrderType Type { get; set; } = OrderType.Standard;
+    public bool NeedTaxi { get; set; }
+    public string? WarrantyNumber { get; set; }
+    public bool ApprovedByDealer { get; set; }
 
     public override string ToString()
     {
@@ -28,16 +32,4 @@ public class RepairOrder : BaseEntity
         var car = Car == null ? CarId : $"{Car.Make} {Car.Model}";
         return $"{OrderNumber}: {client}, {car}, {Status}, {Cost:C}";
     }
-}
-
-public class UrgentRepairOrder : RepairOrder
-{
-    public bool NeedTaxi { get; set; }
-    public const decimal DefaultUrgentFee = 500m;
-}
-
-public class WarrantyRepairOrder : RepairOrder
-{
-    public string WarrantyNumber { get; set; } = "";
-    public bool ApprovedByDealer { get; set; }
 }

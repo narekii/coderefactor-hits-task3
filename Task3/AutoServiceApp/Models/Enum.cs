@@ -16,3 +16,9 @@ public enum PaymentType
     Card,
     Transfer
 }
+public enum OrderType
+{
+    Standard,
+    Urgent,
+    Warranty
+}
