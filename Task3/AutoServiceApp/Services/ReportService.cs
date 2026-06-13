@@ -5,6 +5,10 @@ namespace AutoServiceApp.Services;
 
 public class ReportService
 {
+    private const int BonusOrderThreshold = 5;
+    private const int MechanicBonusAmount = 1000;
+    private const int LowStockThreshold = 3;
+    private const string RestockMessage = "reorder at least 10000";
     public string BuildReports(List<RepairOrder> orders, List<Mechanic> mechanics, List<Part> parts, DateTime from, DateTime to)
     {
         return BuildRevenueReport(orders, from, to) + "\n"
@@ -38,7 +42,7 @@ public class ReportService
         foreach (var m in mechanics)
         {
             var count = orders.Count(o => o.AssignedMechanicId == m.Id && o.Status != OrderStatus.Released);
-            var bonus = count > 5 ? 1000 : 0;
+            var bonus = count > BonusOrderThreshold ? MechanicBonusAmount : 0;
             sb.AppendLine($"{m.Name}: active orders {count}, estimated bonus {bonus}");
         }
         return sb.ToString();
@@ -50,7 +54,7 @@ public class ReportService
         sb.AppendLine("Parts stock");
         foreach (var p in parts.OrderBy(x => x.Stock))
         {
-            var line = p.Stock < 3 ? $"{p.Name} [{p.Article}] stock {p.Stock}, reorder at least 10000" : $"{p.Name} [{p.Article}] stock {p.Stock}";
+            var line = p.Stock < LowStockThreshold ? $"{p.Name} [{p.Article}] stock {p.Stock}, {RestockMessage}" : $"{p.Name} [{p.Article}] stock {p.Stock}";
             sb.AppendLine(line);
         }
         return sb.ToString();
