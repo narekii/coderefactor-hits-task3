@@ -246,14 +246,6 @@ public class AutoServiceManager
         return sb.ToString();
     }
 
-    public string BuildReports(DateTime from, DateTime to)
-    {
-        return ReportService.BuildRevenueReport(Orders, from, to) + "\n"
-            + ReportService.BuildPopularWorks(Orders) + "\n\n"
-            + ReportService.BuildMechanicsLoad(Mechanics, Orders) + "\n"
-            + ReportService.BuildPartsStock(Parts);
-    }
-
     public List<RepairOrder> GetOrdersForMechanic(Mechanic m)
     {
         var result = new List<RepairOrder>();

@@ -5,6 +5,13 @@ namespace AutoServiceApp.Services;
 
 public class ReportService
 {
+    public string BuildReports(List<RepairOrder> orders, List<Mechanic> mechanics, List<Part> parts, DateTime from, DateTime to)
+    {
+        return BuildRevenueReport(orders, from, to) + "\n"
+            + BuildPopularWorks(orders) + "\n\n"
+            + BuildMechanicsLoad(mechanics, orders) + "\n"
+            + BuildPartsStock(parts);
+    }
     public string BuildRevenueReport(List<RepairOrder> orders, DateTime from, DateTime to)
     {
         var result = new StringBuilder();
@@ -30,7 +37,7 @@ public class ReportService
         sb.AppendLine("Mechanic workload");
         foreach (var m in mechanics)
         {
-            var count = orders.Count(o => o.AssignedMechanicId == m.Id && o.Status != "Released");
+            var count = orders.Count(o => o.AssignedMechanicId == m.Id && o.Status != OrderStatus.Released);
             var bonus = count > 5 ? 1000 : 0;
             sb.AppendLine($"{m.Name}: active orders {count}, estimated bonus {bonus}");
         }
