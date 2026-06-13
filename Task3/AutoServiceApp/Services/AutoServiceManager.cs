@@ -18,10 +18,9 @@ public class AutoServiceManager
     public JsonFileStore<RepairOrder> OrderStore { get; set; } = new();
     public JsonFileStore<Part> PartStore { get; set; } = new();
     public JsonFileStore<Mechanic> MechanicStore { get; set; } = new();
-    public SmsNotifier SmsNotifier { get; set; } = new();
-    public EmailSender EmailSender { get; set; } = new();
     public ReportService ReportService { get; set; } = new();
     public OrderStatusHelper StatusHelper { get; set; } = new();
+    public NotificationFacade Notifier { get; set; } = new(new SmsNotifier(), new EmailSender());
 
     public void Load()
     {
@@ -320,15 +319,7 @@ public class AutoServiceManager
         var phone = order.Customer?.Phone ?? "";
         var email = order.Customer?.Email ?? "";
         var text = $"Order {order.OrderNumber}: new status {order.Status}";
-        if (type == "sms")
-            SmsNotifier.SendSms(phone, text);
-        else if (type == "email")
-            EmailSender.Send(email, "Order status", text);
-        else
-        {
-            SmsNotifier.SendSms(phone, text);
-            EmailSender.Send(email, "Order status", text);
-        }
+        Notifier.Notify(type, phone, email, "Order status", text);
         Notifications.Add($"{DateTime.Now:g}: {type} {text}");
     }
 
