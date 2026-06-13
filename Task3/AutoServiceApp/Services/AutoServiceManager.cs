@@ -63,20 +63,14 @@ public class AutoServiceManager
             m.AssignedOrderIds = Orders.Where(x => x.AssignedMechanicId == m.Id).Select(x => x.Id).ToList();
     }
 
-    public Customer AddCustomer(string name, string phone, string email, string address)
+    public void AddCustomer(Customer customer)
     {
-        var c = new Customer { Name = name, Phone = phone, Email = email, Address = address };
-        Customers.Add(c);
+        Customers.Add(customer);
         SaveAll();
-        return c;
     }
 
-    public void UpdateCustomer(Customer customer, string name, string phone, string email, string address)
+    public void UpdateCustomer(Customer customer)
     {
-        customer.Name = name;
-        customer.Phone = phone;
-        customer.Email = email;
-        customer.Address = address;
         foreach (var order in Orders.Where(x => x.CustomerId == customer.Id))
             order.Customer = customer;
         SaveAll();
@@ -92,36 +86,15 @@ public class AutoServiceManager
         SaveAll();
     }
 
-    public Car AddCar(Customer? owner, string make, string model, int year, string vin, int mileage, string licensePlate)
+    public void AddCar(Car car)
     {
-        var car = new Car
-        {
-            CustomerId = owner?.Id ?? "",
-            Owner = owner,
-            Make = make,
-            Model = model,
-            Year = year,
-            Vin = vin,
-            Mileage = mileage,
-            LicensePlate = licensePlate
-        };
         Cars.Add(car);
-        if (owner != null)
-            owner.Cars.Add(car);
+        car.Owner?.Cars.Add(car);
         SaveAll();
-        return car;
     }
 
-    public void UpdateCar(Car car, Customer? owner, string make, string model, int year, string vin, int mileage, string licensePlate)
+    public void UpdateCar(Car car)
     {
-        car.CustomerId = owner?.Id ?? "";
-        car.Owner = owner;
-        car.Make = make;
-        car.Model = model;
-        car.Year = year;
-        car.Vin = vin;
-        car.Mileage = mileage;
-        car.LicensePlate = licensePlate;
         RelinkEverything();
         SaveAll();
     }
@@ -136,26 +109,21 @@ public class AutoServiceManager
         SaveAll();
     }
 
-    public Mechanic AddMechanic(string name, string specialization, decimal hourRate)
+    public void AddMechanic(Mechanic mechanic)
     {
-        var m = new Mechanic { Name = name, Specialization = specialization, HourRate = hourRate };
-        Mechanics.Add(m);
-        SaveAll();
-        return m;
-    }
-
-    public void UpdateMechanic(Mechanic m, string name, string specialization, decimal hourRate)
-    {
-        m.Name = name;
-        m.Specialization = specialization;
-        m.HourRate = hourRate;
+        Mechanics.Add(mechanic);
         SaveAll();
     }
 
-    public void DeleteMechanic(Mechanic m)
+    public void UpdateMechanic(Mechanic mechanic)
     {
-        Mechanics.Remove(m);
-        foreach (var order in Orders.Where(o => o.AssignedMechanicId == m.Id))
+        SaveAll();
+    }
+
+    public void DeleteMechanic(Mechanic mechanic)
+    {
+        Mechanics.Remove(mechanic);
+        foreach (var order in Orders.Where(o => o.AssignedMechanicId == mechanic.Id))
         {
             order.AssignedMechanicId = "";
             order.AssignedMechanic = null;
@@ -163,20 +131,14 @@ public class AutoServiceManager
         SaveAll();
     }
 
-    public Part AddPart(string name, string article, decimal price, int stock)
+    public void AddPart(Part part)
     {
-        var p = new Part { Name = name, Article = article, Price = price, Stock = stock };
-        Parts.Add(p);
+        Parts.Add(part);
         SaveAll();
-        return p;
     }
 
-    public void UpdatePart(Part part, string name, string article, decimal price, int stock)
+    public void UpdatePart(Part part)
     {
-        part.Name = name;
-        part.Article = article;
-        part.Price = price;
-        part.Stock = stock;
         SaveAll();
     }
 
@@ -315,14 +277,22 @@ public class AutoServiceManager
 
     private void Seed()
     {
-        var c1 = AddCustomer("John Parker", "+1 555 100-20-30", "john@example.com", "12 Market Street");
-        var c2 = AddCustomer("Anna Stone", "+1 555 555-44-33", "anna@example.com", "45 Lake Avenue");
-        var car1 = AddCar(c1, "Toyota", "Camry", 2018, "JTNB11HK303000001", 87000, "ABC123");
-        AddCar(c2, "Kia", "Rio", 2021, "Z94CB41ABMR000002", 43000, "MOR777");
-        var m1 = AddMechanic("Sam Miller", "engine", 1200);
-        AddMechanic("Owen Lane", "electrical", 1500);
-        AddPart("Oil filter", "OF-100", 650, 12);
-        AddPart("Brake pads", "BR-500", 3200, 5);
+        var c1 = new Customer { Name = "John Parker", Phone = "+1 555 100-20-30", Email = "john@example.com", Address = "12 Market Street" };
+        var c2 = new Customer { Name = "Anna Stone", Phone = "+1 555 555-44-33", Email = "anna@example.com", Address = "45 Lake Avenue" };
+        AddCustomer(c1);
+        AddCustomer(c2);
+        var car1 = new Car { Owner = c1, CustomerId = c1.Id, Make = "Toyota", Model = "Camry", Year = 2018, Vin = "JTNB11HK303000001", Mileage = 87000, LicensePlate = "ABC123" };
+        var car2 = new Car { Owner = c2, CustomerId = c2.Id, Make = "Kia", Model = "Rio", Year = 2021, Vin = "Z94CB41ABMR000002", Mileage = 43000, LicensePlate = "MOR777" };
+        AddCar(car1);
+        AddCar(car2);
+        var m1 = new Mechanic { Name = "Sam Miller", Specialization = "engine", HourRate = 1200 };
+        var m2 = new Mechanic { Name = "Owen Lane", Specialization = "electrical", HourRate = 1500 };
+        AddMechanic(m1);
+        AddMechanic(m2);
+        var p1 = new Part { Name = "Oil filter", Article = "OF-100", Price = 650, Stock = 12 };
+        var p2 = new Part { Name = "Brake pads", Article = "BR-500", Price = 3200, Stock = 5 };
+        AddPart(p1);
+        AddPart(p2);
         var order = CreateOrder(c1, car1, "Knock on startup, diagnostics required", m1, OrderStatus.Diagnostics, PaymentType.Card);
         AddWorkToOrder(order, "Computer diagnostics", 1.5, 2500);
         SaveAll();
