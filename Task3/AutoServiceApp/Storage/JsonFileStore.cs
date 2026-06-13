@@ -32,6 +32,11 @@ public class JsonFileStore<T>
             return new List<T>();
         }
     }
+    public void SetTestFolder(string path)
+    {
+        Folder = path;
+        Directory.CreateDirectory(Folder);
+    }
 
     public void Save(string name, List<T> values)
     {
